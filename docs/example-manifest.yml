@@ -1,0 +1,152 @@
+---
+name: redis-on-demand-broker
+
+director_uuid: <director uuid>
+
+releases:
+  - name: &broker-release on-demand-service-broker
+    version: latest
+  - name: &service-adapter-release redis-example-service-adapter
+    version: latest
+
+stemcells:
+  - alias: trusty
+    os: ubuntu-trusty
+    version: latest
+
+instance_groups:
+  - name: broker
+    instances: 1
+    jobs:
+      - name: broker
+        release: *broker-release
+        properties:
+          port: &broker_port 8080
+          username: <broker basic auth username>
+          password: <broker basic auth password>
+          disable_ssl_cert_verification: <true | false> # optional
+          cf:
+            url: <CF API URL>
+            root_ca_cert: <root ca cert for CF> # optional
+            authentication:
+              url: <CF UAA URL>
+              user_credentials: # can use client_credentials instead
+                username: <cf admin user>
+                password: <cf admin password>
+          bosh:
+            url: <bosh URL>
+            authentication:
+              basic: # can use uaa instead
+                username: <bosh director basic auth username>
+                password: <bosh director basic auth username>
+          service_adapter:
+            path: /var/vcap/packages/service-adapter/bin/service-adapter
+          service_deployment:
+            releases:
+              - name: redis-service
+                version: latest
+                jobs: [redis-server]
+            stemcell:
+              os: ubuntu-trusty
+              version: latest
+          service_catalog:
+            id: B07E8B68-601C-440A-8F15-E263D29998AA
+            service_name: redis-on-demand
+            service_description: Redis Dedicated Instance
+            bindable: true
+            plan_updatable: true
+            metadata:
+              display_name: Redis
+            tags:
+              - redis
+              - pivotal
+            plans:
+              - name: dedicated-vm
+                plan_id: 69E93C94-1DE0-445D-A80E-888B7505E1C1
+                description: Redis Dedicated Instance
+                metadata:
+                  display_name: Redis Dedicated Instance
+                  bullets: []
+                quotas: # optional
+                  service_instance_limit: 10
+                properties:
+                  persistence: <true | false> # attach a persistent disk below if true
+                instance_groups:
+                  - name: redis-server
+                    vm_type: <from cloud config>
+                    persistent_disk: <from cloud config> # only if persistence is true in plan properties
+                    instances: 1
+                    networks: [<from cloud config>]
+                    azs: [<from cloud config>]
+      - name: service-adapter
+        release: *service-adapter-release
+    vm_type: <from cloud config>
+    stemcell: trusty
+    networks: [{name: <from cloud config>}]
+    azs: [<from cloud config>]
+
+  - name: register-broker
+    lifecycle: errand
+    instances: 1
+    jobs:
+      - name: register-broker
+        release: *broker-release
+        properties:
+          broker_name: &broker_name redis-on-demand
+          disable_ssl_cert_verification: <true | false>
+          cf: &cf
+            api_url: <CF API URL>
+            admin_username: <CF admin username>
+            admin_password: <CF admin password>
+    vm_type: <from cloud config>
+    stemcell: trusty
+    networks: [{name: <from cloud config>}]
+    azs: [<from cloud config>]
+
+  - name: deregister-broker
+    lifecycle: errand
+    instances: 1
+    jobs:
+      - name: deregister-broker
+        release: *broker-release
+        properties:
+          broker_name: *broker_name
+          disable_ssl_cert_verification: *disable_ssl_cert_verification
+          cf:
+            <<: *cf
+    vm_type: <from cloud config>
+    stemcell: trusty
+    networks: [{name: <from cloud config>}]
+    azs: [<from cloud config>]
+
+  - name: delete-sub-deployments
+    lifecycle: errand
+    instances: 1
+    jobs:
+      - name: delete-sub-deployments
+        release: *broker-release
+        properties:
+          disable_ssl_cert_verification: *disable_ssl_cert_verification
+          cf:
+            <<: *cf
+    vm_type: <from cloud config>
+    stemcell: trusty
+    networks: [{name: <from cloud config>}]
+    azs: [<from cloud config>]
+
+  - name: upgrade-sub-deployments
+    lifecycle: errand
+    instances: 1
+    jobs:
+      - name: upgrade-sub-deployments
+        release: *broker-release
+    vm_type: <from cloud config>
+    stemcell: trusty
+    networks: [{name: <from cloud config>}]
+    azs: [<from cloud config>]
+
+update:
+  canaries: 1
+  canary_watch_time: 3000-180000
+  update_watch_time: 3000-180000
+  max_in_flight: 4
