@@ -119,11 +119,11 @@ instance_groups:
     networks: [{name: <from cloud config>}]
     azs: [<from cloud config>]
 
-  - name: delete-sub-deployments
+  - name: delete-all-service-instances
     lifecycle: errand
     instances: 1
     jobs:
-      - name: delete-sub-deployments
+      - name: delete-all-service-instances
         release: *broker-release
         properties:
           disable_ssl_cert_verification: *disable_ssl_cert_verification
@@ -134,11 +134,11 @@ instance_groups:
     networks: [{name: <from cloud config>}]
     azs: [<from cloud config>]
 
-  - name: upgrade-sub-deployments
+  - name: upgrade-all-service-instances
     lifecycle: errand
     instances: 1
     jobs:
-      - name: upgrade-sub-deployments
+      - name: upgrade-all-service-instances
         release: *broker-release
     vm_type: <from cloud config>
     stemcell: trusty
