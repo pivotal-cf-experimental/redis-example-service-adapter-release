@@ -145,6 +145,17 @@ instance_groups:
     networks: [{name: <from cloud config>}]
     azs: [<from cloud config>]
 
+  - name: orphan-deployments
+    lifecycle: errand
+    instances: 1
+    jobs:
+      - name: orphan-deployments
+        release: *broker-release
+    vm_type: <from cloud config>
+    stemcell: trusty
+    networks: [{name: <from cloud config>}]
+    azs: [<from cloud config>]
+
 update:
   canaries: 1
   canary_watch_time: 3000-180000
