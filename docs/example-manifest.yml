@@ -45,7 +45,7 @@ instance_groups:
             releases:
               - name: redis-service
                 version: latest
-                jobs: [redis-server]
+                jobs: [redis-server, health-check]
             stemcell:
               os: ubuntu-trusty
               version: latest
@@ -78,8 +78,15 @@ instance_groups:
                     instances: 1
                     networks: [<from cloud config>]
                     azs: [<from cloud config>]
+                  - name: health-check # optional errand
+                    lifecycle: errand
+                    vm_type: <from cloud config>
+                    instances: 1
+                    networks: [<from cloud config>]
+                    azs: [<from cloud config>]
       - name: service-adapter
         release: *service-adapter-release
+
     vm_type: <from cloud config>
     stemcell: trusty
     networks: [{name: <from cloud config>}]
