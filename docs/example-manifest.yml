@@ -12,7 +12,7 @@ releases:
 stemcells:
   - alias: trusty
     os: ubuntu-trusty
-    version: latest
+    version: <stemcell version>
 
 instance_groups:
   - name: broker
@@ -44,11 +44,11 @@ instance_groups:
           service_deployment:
             releases:
               - name: redis-service
-                version: latest
+                version: <redis service version>
                 jobs: [redis-server, health-check]
             stemcell:
               os: ubuntu-trusty
-              version: latest
+              version: <stemcell version>
           service_catalog:
             id: B07E8B68-601C-440A-8F15-E263D29998AA
             service_name: redis-on-demand
