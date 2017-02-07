@@ -1,7 +1,7 @@
 ---
 name: redis-on-demand-broker
 
-director_uuid: <director uuid>
+director_uuid: <DIRECTOR_UUID>
 
 releases:
   - name: &broker-release on-demand-service-broker
@@ -12,7 +12,7 @@ releases:
 stemcells:
   - alias: trusty
     os: ubuntu-trusty
-    version: <stemcell version>
+    version: <STEMCELL_VERSION>
 
 instance_groups:
   - name: broker
@@ -22,33 +22,33 @@ instance_groups:
         release: *broker-release
         properties:
           port: &broker_port 8080
-          username: <broker basic auth username>
-          password: <broker basic auth password>
+         username: <BROKER_BASIC_AUTH_USERNAME>
+          password: <BROKER BASIC AUTH PASSWORD>
           disable_ssl_cert_verification: <true | false> # optional
           cf:
-            url: <CF API URL>
+            url: <CF_API_URL>
             root_ca_cert: <root ca cert for CF> # optional
             authentication:
-              url: <CF UAA URL>
+              url: <CF_UAA_URL>
               user_credentials: # can use client_credentials instead
-                username: <cf admin user>
-                password: <cf admin password>
+                username: <CF_ADMIN_USER>
+                password: <CF_ADMIN_PASSWORD>
           bosh:
-            url: <bosh URL>
+            url: <BOSH_URL>
             authentication:
               basic: # can use uaa instead
-                username: <bosh director basic auth username>
-                password: <bosh director basic auth username>
+                username: <BOSH_DIRECTOR_BASIC_AUTH_USERNAME>
+                password: <BOSH_DIRECTOR_BASIC_AUTH_USERNAME>
           service_adapter:
             path: /var/vcap/packages/service-adapter/bin/service-adapter
           service_deployment:
             releases:
               - name: redis-service
-                version: <redis service version>
+                version: <REDIS_SERVICE_VERSION>
                 jobs: [redis-server, health-check]
             stemcell:
               os: ubuntu-trusty
-              version: <stemcell version>
+              version: <STEMCELL_VERSION>
           service_catalog:
             id: B07E8B68-601C-440A-8F15-E263D29998AA
             service_name: redis-on-demand
@@ -70,27 +70,27 @@ instance_groups:
                 quotas: # optional
                   service_instance_limit: 10
                 properties:
-                  persistence: <true | false> # attach a persistent disk below if true
+                  persistence: <TRUE | FALSE> # attach a persistent disk below if true
                 instance_groups:
                   - name: redis-server
-                    vm_type: <from cloud config>
-                    persistent_disk: <from cloud config> # only if persistence is true in plan properties
+                    vm_type: <FROM_CLOUD_CONFIG>
+                    persistent_disk: <FROM_CLOUD_CONFIG> # only if persistence is true in plan properties
                     instances: 1
-                    networks: [<from cloud config>]
-                    azs: [<from cloud config>]
+                    networks: [<FROM_CLOUD_CONFIG>]
+                    azs: [<FROM_CLOUD_CONFIG>]
                   - name: health-check # optional errand
                     lifecycle: errand
-                    vm_type: <from cloud config>
+                    vm_type: <FROM_CLOUD_CONFIG>
                     instances: 1
-                    networks: [<from cloud config>]
-                    azs: [<from cloud config>]
+                    networks: [<FROM_CLOUD_CONFIG>]
+                    azs: [<FROM_CLOUD_CONFIG>]
       - name: service-adapter
         release: *service-adapter-release
 
-    vm_type: <from cloud config>
+    vm_type: <FROM_CLOUD_CONFIG>
     stemcell: trusty
-    networks: [{name: <from cloud config>}]
-    azs: [<from cloud config>]
+    networks: [{name: <FROM_CLOUD_CONFIG>}]
+    azs: [<FROM_CLOUD_CONFIG>]
 
   - name: register-broker
     lifecycle: errand
@@ -102,13 +102,13 @@ instance_groups:
           broker_name: &broker_name redis-on-demand
           disable_ssl_cert_verification: <true | false>
           cf: &cf
-            api_url: <CF API URL>
-            admin_username: <CF admin username>
-            admin_password: <CF admin password>
-    vm_type: <from cloud config>
+            api_url: <CF_API_URL>
+            admin_username: <CF_ADMIN_USERNAME>
+            admin_password: <CF_ADMIN_PASSWORD>
+    vm_type: <FROM_CLOUD_CONFIG>
     stemcell: trusty
-    networks: [{name: <from cloud config>}]
-    azs: [<from cloud config>]
+    networks: [{name: <FROM_CLOUD_CONFIG>}]
+    azs: [<FROM_CLOUD_CONFIG>]
 
   - name: deregister-broker
     lifecycle: errand
@@ -121,10 +121,10 @@ instance_groups:
           disable_ssl_cert_verification: *disable_ssl_cert_verification
           cf:
             <<: *cf
-    vm_type: <from cloud config>
+    vm_type: <FROM_CLOUD_CONFIG>
     stemcell: trusty
-    networks: [{name: <from cloud config>}]
-    azs: [<from cloud config>]
+    networks: [{name: <FROM_CLOUD_CONFIG>}]
+    azs: [<FROM_CLOUD_CONFIG>]
 
   - name: delete-all-service-instances
     lifecycle: errand
@@ -136,10 +136,10 @@ instance_groups:
           disable_ssl_cert_verification: *disable_ssl_cert_verification
           cf:
             <<: *cf
-    vm_type: <from cloud config>
+    vm_type: <FROM_CLOUD_CONFIG>
     stemcell: trusty
-    networks: [{name: <from cloud config>}]
-    azs: [<from cloud config>]
+    networks: [{name: <FROM_CLOUD_CONFIG>}]
+    azs: [<FROM_CLOUD_CONFIG>]
 
   - name: upgrade-all-service-instances
     lifecycle: errand
@@ -147,10 +147,10 @@ instance_groups:
     jobs:
       - name: upgrade-all-service-instances
         release: *broker-release
-    vm_type: <from cloud config>
+    vm_type: <FROM_CLOUD_CONFIG>
     stemcell: trusty
-    networks: [{name: <from cloud config>}]
-    azs: [<from cloud config>]
+    networks: [{name: <FROM_CLOUD_CONFIG>}]
+    azs: [<FROM_CLOUD_CONFIG>]
 
   - name: orphan-deployments
     lifecycle: errand
@@ -158,10 +158,10 @@ instance_groups:
     jobs:
       - name: orphan-deployments
         release: *broker-release
-    vm_type: <from cloud config>
+    vm_type: <FROM_CLOUD_CONFIG>
     stemcell: trusty
-    networks: [{name: <from cloud config>}]
-    azs: [<from cloud config>]
+    networks: [{name: <FROM_CLOUD_CONFIG>}]
+    azs: [<FROM_CLOUD_CONFIG>]
 
 update:
   canaries: 1
