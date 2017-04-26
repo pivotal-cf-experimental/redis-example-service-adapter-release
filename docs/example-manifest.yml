@@ -45,7 +45,10 @@ instance_groups:
             releases:
               - name: redis-service
                 version: <REDIS_SERVICE_VERSION>
-                jobs: [redis-server, health-check]
+                jobs:
+                - redis-server
+                - health-check # optional post-deploy lifecycle errand
+                - cleanup-data # optional pre-delete lifecycle errand
             stemcell:
               os: ubuntu-trusty
               version: <STEMCELL_VERSION>
@@ -71,6 +74,9 @@ instance_groups:
                   service_instance_limit: 10
                 properties:
                   persistence: <TRUE | FALSE> # attach a persistent disk below if true
+                lifecycle_errands:
+                  post_deploy: health-check # optional post-deploy lifecycle errand
+                  pre_delete: cleanup-data # optional pre-delete lifecycle errand
                 instance_groups:
                   - name: redis-server
                     vm_type: <FROM_CLOUD_CONFIG>
@@ -78,12 +84,19 @@ instance_groups:
                     instances: 1
                     networks: [<FROM_CLOUD_CONFIG>]
                     azs: [<FROM_CLOUD_CONFIG>]
-                  - name: health-check # optional errand
+                  - name: health-check # optional post-deploy lifecycle errand
                     lifecycle: errand
                     vm_type: <FROM_CLOUD_CONFIG>
                     instances: 1
                     networks: [<FROM_CLOUD_CONFIG>]
                     azs: [<FROM_CLOUD_CONFIG>]
+                  - name: cleanup-data # optional pre-delete lifecycle errand
+                    lifecycle: errand
+                    vm_type: <FROM_CLOUD_CONFIG>
+                    instances: 1
+                    networks: [<FROM_CLOUD_CONFIG>]
+                    azs: [<FROM_CLOUD_CONFIG>]
+
       - name: service-adapter
         release: *service-adapter-release
 
