@@ -9,4 +9,4 @@ inputs:
 - name: redis-service-adapter-release
 
 run:
-  path: redis-service-adapter-release/src/github.com/pivotal-cf-experimental/redis-example-service-adapter/ci/unit-service-adapter-tests.sh
+  path: redis-service-adapter-release/ci/unit-tests.sh
