@@ -6,3 +6,7 @@ config/private.yml
 dev_releases
 bin
 pkg
+src/github.com/onsi
+src/github.com/pivotal-cf
+src/golang.org
+src/gopkg.in
