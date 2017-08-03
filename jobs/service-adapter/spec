@@ -1,7 +1,11 @@
 ---
 name: service-adapter
-templates: {}
+templates:
+  service-adapter.yml.erb: config/service-adapter.conf
 
 packages:
 - odb-service-adapter
-properties: {}
+properties:
+  redis_instance_group_name:
+    description: The name of the instance group where the redis server jobs will run
+    default: redis-server
