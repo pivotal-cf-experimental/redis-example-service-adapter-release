@@ -1,10 +1,5 @@
 [{
   "plan": "dedicated-vm",
-  "update_to_plan": "dedicated-high-memory-vm"
-}, {
-  "plan": "dedicated-vm"
-}, {
-  "plan": "dedicated-vm",
   "arbitrary_params": {
     "maxclients": 100
   }
