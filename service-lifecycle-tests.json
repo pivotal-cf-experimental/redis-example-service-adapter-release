@@ -6,6 +6,7 @@
 }, {
   "plan": "dedicated-vm",
   "arbitrary_params": {
+    "credhub_secret_path": "/odb/sys/test/secret",
     "maxclients": 100
   }
 }]
