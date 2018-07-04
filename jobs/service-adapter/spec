@@ -9,3 +9,6 @@ properties:
   redis_instance_group_name:
     description: The name of the instance group where the redis server jobs will run
     default: redis-server
+  ignore_odb_managed_secret_on_update:
+    description: Used for acceptance testing - adapter will ignore odb managed secret credhub paths present in previous manifests
+    default: false
