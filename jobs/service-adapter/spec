@@ -12,3 +12,7 @@ properties:
   ignore_odb_managed_secret_on_update:
     description: Used for acceptance testing - adapter will ignore odb managed secret credhub paths present in previous manifests
     default: false
+  secure_manifests_enabled:
+    description: Used to inform the adapter that the broker is deployed with secure manifests enabled
+    default: true
+
