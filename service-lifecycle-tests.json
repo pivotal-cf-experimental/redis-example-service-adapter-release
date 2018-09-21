@@ -6,8 +6,8 @@
   "binding_dns_attribute": "dns_addresses"
 }, {
   "plan": "dedicated-vm",
+  "has_credhub_secret_path": true,
   "arbitrary_params": {
-    "credhub_secret_path": "/odb/sys/test/secret",
     "maxclients": 100
   }
 }]
