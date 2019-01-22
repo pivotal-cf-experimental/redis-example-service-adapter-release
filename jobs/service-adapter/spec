@@ -14,5 +14,5 @@ properties:
     default: false
   secure_manifests_enabled:
     description: Used to inform the adapter that the broker is deployed with secure manifests enabled
-    default: true
+    default: false
 
