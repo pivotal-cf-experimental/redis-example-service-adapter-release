@@ -12,6 +12,8 @@ This is intended as an example and should not be used in production.
 
 To see an example manifest that deploys the Redis adapter with the On-Demand Service Broker (ODB), please see the [example manifest](docs/example-manifest.yml) and [example Redis BOSH release](https://github.com/pivotal-cf-experimental/redis-example-service-release).
 
+Alternatively you can use the simplified `redis-example-service-adapter.yml` manifest which requires only a frew variables to configure.
+
 ---
 
 ## Development

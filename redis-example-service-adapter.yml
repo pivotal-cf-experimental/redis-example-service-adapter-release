@@ -1,0 +1,196 @@
+---
+name: ((broker_deployment_name))
+
+releases:
+  - name: &broker-release ((broker_release))
+    version: ((broker_version))
+  - name: &service-adapter-release ((service_adapter_release))
+    version: ((service_adapter_version))
+  - name: routing
+    version: latest
+  - name: loggregator
+    version: latest
+  - name: bpm
+    version: latest
+
+stemcells:
+  - alias: &stemcell_alias ((meta.stemcell.os))
+    os: &stemcell_os ((meta.stemcell.os))
+    version: &stemcell_version "((meta.stemcell.version))"
+
+instance_groups:
+  - name: broker
+    instances: 1
+    vm_type: ((meta.vm_type))
+    vm_extensions: ((meta.instance_groups_vm_extensions))
+    stemcell: *stemcell_alias
+    networks: [{name: ((meta.services_subnet))}]
+    azs: [((meta.az))]
+    jobs:
+      - name: broker
+        release: *broker-release
+        properties:
+          port: &broker_port 8080
+          username: broker
+          password: ((broker_password))
+          disable_ssl_cert_verification: ((disable_ssl_cert_verification))
+          expose_operational_errors: false
+          startup_banner: true
+          shutdown_timeout_in_seconds: 10
+          bosh:
+            url: ((bosh.url))
+            authentication:
+              uaa:
+                client_id: ((bosh.authentication.username))
+                client_secret: ((bosh.authentication.password))
+            root_ca_cert: ((bosh.root_ca_cert))
+          cf:
+            root_ca_cert: ((router_ca.ca))
+            url: ((cf.api_url))
+            authentication:
+              url: ((cf.uaa.url))
+              client_credentials:
+                client_id: cf_smoke_tests
+                secret: ((uaa_clients_cf_smoke_tests_secret))
+          service_adapter:
+            path: /var/vcap/packages/odb-service-adapter/bin/service-adapter
+            mount_paths:
+              - /var/vcap/jobs/service-adapter/config/
+          service_deployment:
+            releases:
+              - name: redis-service
+                version: ((redis_service_version))
+                jobs:
+                - redis-server
+                - health-check # optional post-deploy lifecycle errand
+                - cleanup-data # optional pre-delete lifecycle errand
+            stemcell:
+              os: *stemcell_os
+              version: *stemcell_version
+          service_catalog:
+            id: B07E8B68-601C-440A-8F15-E263D29998AA
+            service_name: p.redis
+            service_description: Redis Dedicated Instance
+            bindable: true
+            plan_updatable: true
+            metadata:
+              display_name: Redis
+            tags:
+              - redis
+              - pivotal
+            global_properties:
+              persistence: true
+            plans:
+              - name: dedicated-vm
+                plan_id: 69E93C94-1DE0-445D-A80E-888B7505E1C1
+                description: Redis Dedicated Instance
+                metadata:
+                  display_name: Redis Dedicated Instance
+                  bullets: []
+                quotas: # optional
+                  service_instance_limit: 10
+                instance_groups:
+                  - name: redis-server
+                    vm_type: ((meta.vm_type))
+                    instances: 1
+                    networks: [((meta.services_subnet))]
+                    azs: [((meta.az))]
+
+                  - name: health-check # optional post-deploy lifecycle errand
+                    lifecycle: errand
+                    vm_type: ((meta.vm_type))
+                    instances: 1
+                    networks: [((meta.services_subnet))]
+                    azs: [((meta.az))]
+
+                  - name: cleanup-data # optional pre-delete lifecycle errand
+                    lifecycle: errand
+                    vm_type: ((meta.vm_type))
+                    instances: 1
+                    networks: [((meta.services_subnet))]
+                    azs: [((meta.az))]
+
+      - name: service-adapter
+        release: *service-adapter-release
+
+      - name: register-broker
+        release: *broker-release
+        properties:
+          broker_name: ((broker_name))
+          broker_uri: https://((broker_name)).((cf.system_domain))
+          disable_ssl_cert_verification: ((disable_ssl_cert_verification))
+
+      - name: bpm
+        release: bpm
+
+      - name: route_registrar
+        release: routing
+        consumes:
+          nats: {from: nats, deployment: ((cf.deployment_name))}
+        properties:
+          route_registrar:
+            routing_api:
+              skip_ssl_validation: true
+            routes:
+            - name: ((broker_name))
+              port: *broker_port
+              registration_interval: 20s
+              uris:
+              - ((broker_name)).((cf.system_domain))
+
+  - name: deregister-broker
+    lifecycle: errand
+    instances: 1
+    vm_type: ((meta.vm_type))
+    vm_extensions: ((meta.instance_groups_vm_extensions))
+    stemcell: *stemcell_alias
+    networks: [{name: ((meta.services_subnet))}]
+    azs: [((meta.az))]
+    jobs: []
+
+  - name: delete-all-service-instances
+    lifecycle: errand
+    instances: 1
+    vm_type: ((meta.vm_type))
+    vm_extensions: ((meta.instance_groups_vm_extensions))
+    stemcell: *stemcell_alias
+    networks: [{name: ((meta.services_subnet))}]
+    azs: [((meta.az))]
+    jobs:
+      - name: delete-all-service-instances
+        release: *broker-release
+
+  - name: upgrade-all-service-instances
+    lifecycle: errand
+    instances: 1
+    vm_type: ((meta.vm_type))
+    vm_extensions: ((meta.instance_groups_vm_extensions))
+    stemcell: *stemcell_alias
+    networks: [{name: ((meta.services_subnet))}]
+    azs: [((meta.az))]
+    jobs:
+      - name: upgrade-all-service-instances
+        release: *broker-release
+
+  - name: orphan-deployments
+    lifecycle: errand
+    instances: 1
+    vm_type: ((meta.vm_type))
+    vm_extensions: ((meta.instance_groups_vm_extensions))
+    stemcell: *stemcell_alias
+    networks: [{name: ((meta.services_subnet))}]
+    azs: [((meta.az))]
+    jobs:
+      - name: orphan-deployments
+        release: *broker-release
+
+update:
+  canaries: 1
+  canary_watch_time: 3000-180000
+  update_watch_time: 3000-180000
+  max_in_flight: 4
+
+variables:
+- name: broker_password
+  type: password
+
